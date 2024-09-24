@@ -1,0 +1,23 @@
+<html>
+<head>
+    <link rel="dns-prefetch" href="index.js" />
+</head>
+<body>
+
+Actions:
+<button onclick="memoryCrash()">Allocate big objects</button>
+<button onclick="domCrash()">Create many DOM elements</button>
+<button onclick="recursiveCrash()">Execute infinite recursion</button>
+<button onclick="freezeCrash()">Run empty infinite loop</button>
+<button onclick="computationCrash()">Run simple computations in infinite loop</button>
+<button onclick="clearCrashes()">Clear crashes</button>
+
+<pre id="crashes">
+
+
+</pre>
+
+<script defer="false" src="index.js"></script>
+
+</body>
+</html>

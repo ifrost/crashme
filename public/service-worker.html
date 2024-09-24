@@ -1,0 +1,66 @@
+<script>
+    let clientId;
+
+    let master = false;
+
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./heartbeat.js').then(
+            (registration) => {
+                registration.update();
+                navigator.serviceWorker.addEventListener("message", (message) => {
+                    if (message.data.event === "connected") {
+                        clientId = message.data.id;
+                        setInterval(() => {
+                            navigator.serviceWorker.controller.postMessage({
+                                event: "ping",
+                                id: clientId
+                            })
+                        }, 5000)
+                    }
+                })
+                navigator.serviceWorker.controller.postMessage({ event: "connect", url: window.location.href })
+            },
+            () => {
+                console.log('Cannot connect to the heartbeat')
+            })
+    })
+
+    window.addEventListener('beforeunload', () => {
+        if (clientId) {
+            closeConnection();
+        }
+    })
+
+    function boom() {
+
+        // setInterval(() => {
+        //     const { jsHeapSizeLimit, totalJSHeapSize, usedJSHeapSize } = performance.memory;
+        //     window.localStorage.setItem("performance", JSON.stringify({
+        //         jsHeapSizeLimit, totalJSHeapSize, usedJSHeapSize, usage: usedJSHeapSize / totalJSHeapSize, limit: totalJSHeapSize / jsHeapSizeLimit
+        //     }));
+        // }, 10)
+
+        let dump = [];
+        let dumps = {};
+
+        setInterval(() => {
+            for (let i = 0; i< 1000000; i++) {
+                if (dump.length > 1000000) {
+                    dumps[Object.keys(dumps).length] = dump;
+                    dump = [];
+                }
+                dump.push(Math.random())
+            }
+        }, 1);
+    }
+
+    function closeConnection() {
+        navigator.serviceWorker.controller.postMessage({ event: "close", id: clientId });
+    }
+
+</script>
+
+<button onclick="test()">connect</button>
+<button onclick="closeConnection()">close</button>
+<button onclick="boom()">crash me</button>
+

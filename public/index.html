@@ -1,23 +1,58 @@
-<html>
+<!DOCTYPE html>
 <head>
-    <link rel="dns-prefetch" href="index.js" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Crashme!</title>
+    <link rel="stylesheet" href="bulma.min.css"/>
 </head>
 <body>
 
-Actions:
-<button onclick="memoryCrash()">Allocate big objects</button>
-<button onclick="domCrash()">Create many DOM elements</button>
-<button onclick="recursiveCrash()">Execute infinite recursion</button>
-<button onclick="freezeCrash()">Run empty infinite loop</button>
-<button onclick="computationCrash()">Run simple computations in infinite loop</button>
-<button onclick="clearCrashes()">Clear crashes</button>
+<section class="section">
+    <div class="container">
+        <h1 class="title">
+            Hi! I am <span id="title">...</span> :)
+        </h1>
+        <p class="subtitle">
+            Crash me!
+        </p>
+        <div class="block">
+            Pick your weapon:
+        </div>
+        <div class="buttons">
+            <button class="button" onclick="memoryCrash()">Allocate big objects</button>
+            <button class="button" onclick="domCrash()">Create many DOM elements</button>
+            <button class="button" onclick="recursiveCrash()">Execute infinite recursion</button>
+            <button class="button" onclick="freezeCrash()">Run empty infinite loop</button>
+            <button class="button" onclick="computationCrash()">Run computations in infinite loop</button>
+        </div>
+        <div class="block is-hidden" id="crashes-block">
+            <div class="block">
+                Crashes:
+            </div>
+            <table class="table" id="crashes-table">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>URL</th>
+                    <th>Last active</th>
+                    <th>Memory report</th>
+                </tr>
+                </thead>
+                <tbody id="crashes-body">
 
-<pre id="crashes">
+                </tbody>
+            </table>
+            <div class="buttons">
+                <button class="button is-danger" onclick="clearCrashes()">Delete all</button>
+            </div>
+        </div>
+    </div>
+</section>
 
 
-</pre>
-
-<script defer="false" src="index.js"></script>
+<script src="detect-crashes.js"></script>
+<script src="utils.js"></script>
+<script src="crash-simulation.js"></script>
 
 </body>
 </html>

@@ -1,23 +1,23 @@
 const express = require('express');
 const app = express();
 
-let crashes = {};
+let crashes = [];
 
 app.use(express.static('public'))
 app.use(express.json());
 
 
 app.get('/log', (req, res) => {
-    console.log('log', req.query)
+    console.log(new Date().toLocaleString(), Object.entries(req.query).map(([key,value]) => `${key}=${value}`).join(" "));
     res.send('')
 })
 app.post('/crash', (req, res) => {
     console.log('crash', req.body)
-    crashes[req.body.id] = req.body;
+    crashes.push(req.body);
     res.send('')
 })
 app.delete('/crashes', (req, res) => {
-    crashes = {}
+    crashes = []
     res.send('')
 })
 app.get('/crashes', (req, res) => {

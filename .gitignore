@@ -1,4 +1,2 @@
 /node_modules/
-/.idea/vcs.xml
-/.idea/modules.xml
-/.idea/crashme.iml
+/.idea/*

@@ -7,7 +7,8 @@ app.use(express.static('public'))
 app.use(express.json());
 
 function log(obj) {
-    console.log(new Date().toLocaleString(), Object.entries(obj).map(([key,value]) => `${key}=${value}`).join(" "));
+    const color = obj.level === "error" ? "\x1b[31m%s\x1b[0m" : "\x1b[36m%s\x1b[0m"
+    console.log(color, new Date().toLocaleString() + " " + Object.entries(obj).map(([key,value]) => `${key}=${value}`).join(" "));
 }
 
 app.get('/log', (req, res) => {

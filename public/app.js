@@ -1,4 +1,4 @@
-(function() {
+(function () {
     function createTable(crashes) {
         if (crashes.length) {
             document.getElementById("crashes-block").classList.remove("is-hidden")
@@ -6,12 +6,12 @@
             document.getElementById("crashes-block").classList.add("is-hidden")
         }
         const body = document.getElementById("crashes-body");
-        body.innerHTML = crashes.map(({id, url, lastActive, memory}) => {
+        body.innerHTML = crashes.map(({id, url, tabLastActive, memory}) => {
             return `
                 <tr>
                     <td>${id}</td>
                     <td>${url}</td>
-                    <td>${new Date(lastActive).toLocaleString()}</td>
+                    <td>${new Date(tabLastActive).toLocaleString()}</td>
                     <td>${JSON.stringify(memory)}</td>
                 </tr>
             `;
@@ -28,7 +28,7 @@
     }
 
     /**
-     * Remove saved crasjes
+     * Remove saved crashes
      */
     function clearCrashes() {
         fetch("/crashes", {

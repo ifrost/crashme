@@ -2,7 +2,6 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Crashme!</title>
     <link rel="stylesheet" href="bulma.min.css"/>
 </head>
 <body>
@@ -19,11 +18,10 @@
             Pick your weapon:
         </div>
         <div class="buttons">
-            <button class="button" onclick="memoryCrash()">Allocate big objects</button>
-            <button class="button" onclick="domCrash()">Create many DOM elements</button>
-            <button class="button" onclick="recursiveCrash()">Execute infinite recursion</button>
-            <button class="button" onclick="freezeCrash()">Run empty infinite loop</button>
-            <button class="button" onclick="computationCrash()">Run computations in infinite loop</button>
+            <button class="button" onclick="crashme.memoryCrash()">Allocate objects</button>
+            <button class="button" onclick="crashme.domCrash()">Create many DOM elements</button>
+            <button class="button" onclick="crashme.recursiveCrash()">Execute an infinite recursion</button>
+            <button class="button" onclick="crashme.loopCrash()">Execute an infinite loop</button>
         </div>
         <div class="block is-hidden" id="crashes-block">
             <div class="block">
@@ -35,6 +33,7 @@
                     <th>ID</th>
                     <th>URL</th>
                     <th>Last active</th>
+                    <th>Worker disconnected</th>
                     <th>Memory report</th>
                 </tr>
                 </thead>
@@ -50,9 +49,7 @@
 </section>
 
 
-<script src="detect-crashes/client.js"></script>
-<script src="detect-crashes/detector.js"></script>
-<script src="utils.js"></script>
+<script src="detect-crashes/client-controller.js"></script>
 <script src="crash-simulation.js"></script>
 <script src="app.js"></script>
 

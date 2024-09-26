@@ -2,6 +2,16 @@
 
 This POC shows how browser crashes could potentially be detected.
 
+## How to run it
+
+1. Run `node ./server.js`
+2. Open http://localhost:1234
+3. You can open multiple tabs (each tab will get a unique name)
+4. Logs are sent to the terminal via server.js
+5. Try various actions that can simulate a crash
+6. Once a crash is detected it will be sent to the server and stored in local memory
+7. http://localhost:1234 will show crashes that were reported 
+
 ## Resources
 
 1. https://github.com/getsentry/sentry-javascript/issues/5280
@@ -36,22 +46,6 @@ I wasn't able to get reliable, consistent results with this approach
 ### Track and persist state of tabs
 
 The idea is to track active tabs and last active pings + stop tracking when tab closes correctly. Based on that info if the tab stopped sending pings + it was not closed correctly we assume it's frozen or crashed.
-
-[//]: # (Web worker may be killed immediately after the tab crashes. Tested in Chrome and sometimes the worker lived a few seconds after a crash &#40;allowing to report that tab is not responsive&#41;. However, in many cases the worker would be terminated immediately on just milliseconds after the crash failing to report on time. Once the worker is killed there's no way to recover that a tab crashed)
-
-[//]: # ()
-[//]: # (To mitigate the above problem an additional storage can be used to save when was the last timestamp a tab was alive:)
-
-[//]: # (- The tab can create an entry in the storage indicating it became alive. )
-
-[//]: # (- The tab can save the current timestamp on to the entry on regular basis to indicate it's still alive. )
-
-[//]: # (- The tab can also remove the entry altogether when it's properly closed. )
-
-[//]: # (- An additional process can check all entries in the storage and if the last timestamp is greater than a given threshold it reports the tab stopped responding.)
-
-[//]: # ()
-[//]: # (The additional process mentioned above can be a worker, though in practice it can also live in any active tab.)
 
 Detection would consist of following components:
 

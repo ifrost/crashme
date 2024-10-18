@@ -1,8 +1,22 @@
+
+
 (function () {
 
-    // let db;
     let worker;
+    let detector;
     let info = {}
+
+    async function reportCrash(event) {
+        if (event.data.event === "crash-detected" && event.data.reporter.id === info.id) {
+            const tab = event.data.tab;
+            await fetch("/crash", {
+                method: "POST", body: JSON.stringify(tab), headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            detector.port.postMessage({ event: "crash-reported", id: event.data.tab.id })
+        }
+    }
 
     // readable names used as ids for testing
     const funnyNames = ["Ziggy", "Bozo", "Fizz", "Waldo", "Bobo", "Zippy", "Wacky", "Jiffy", "Dinky", "Taco", "Noodles", "Spud", "Goober", "Snickers", "Chomp", "Pogo", "Gizmo", "Jelly", "Bubbles", "Flip", "Sparky", "Buzz", "Toot", "Flick", "Sprout", "Peppy", "Bingo", "Muffin", "Skippy", "Twix", "Squee", "Tater", "Pop", "Zip", "Chunk", "Wiggles", "Snuffy", "Pip", "Nugget", "Doodle", "Whiz", "Fluff", "Bam", "Jinx", "Zonk", "Scooter", "Plop", "Fizz", "Gloop", "Bucky", "Chomp", "Squishy", "Whiskers", "Ruff", "Dizzy", "Bonk", "Sprinkle", "Zipper", "Boom", "Zoodle", "Waffle", "Tickle", "Munch", "Floppy", "Popcorn", "Swoosh", "Zigzag", "Wobble", "Pip", "Frodo", "Gibber", "Spritz", "Hopper", "Zippy", "Wobbles", "Puff", "Frolic", "Taco", "Dabble", "Snort", "Boing", "Tizzy", "Twinkle", "Snip", "Puff", "Bop", "Cricket", "Doodle", "Blip", "Giggles", "Flicker", "Squiggle", "Chuckle", "Hoot", "Guffaw", "Tinker", "Bonzo", "Fluke", "Whisk"];
@@ -51,7 +65,8 @@
         worker.addEventListener("error", (e) => console.log(e))
         worker.addEventListener("message", updateInfo)
 
-        const detector = new SharedWorker("/detect-crashes/detector-worker.js");
+        detector = new SharedWorker("/detect-crashes/detector-worker.js");
+        detector.port.addEventListener("message", reportCrash)
         detector.port.start();
     }
 

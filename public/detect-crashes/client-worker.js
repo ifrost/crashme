@@ -29,12 +29,12 @@ addEventListener("message", async (event) => {
     }
     if (event.data.event === "start") {
         db = await getDb();
-        logger({event: "client-initialized", id: event.data.info.id})
+        logger({ event: "client-initialized", id: event.data.info.id })
     }
     if (event.data.event === "close") {
         const transaction = db.transaction(["tabs"], "readwrite");
         const store = transaction.objectStore("tabs");
         store.delete(event.data.info.id)
-        logger({event: "closed", id: event.data.info.id})
+        logger({ event: "closed", id: event.data.info.id })
     }
 });

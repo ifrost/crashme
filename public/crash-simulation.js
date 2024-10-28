@@ -2,7 +2,7 @@
  * A set of functions that can be used to simulate expensive operations that may crash of freeze the browser
  */
 
-const crashme = {
+const crashmeSimulation = {
     memoryCrash: function () {
         let dump = [];
         let dumps = {};

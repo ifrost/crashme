@@ -18,10 +18,10 @@
             Pick your weapon:
         </div>
         <div class="buttons">
-            <button class="button" onclick="crashme.memoryCrash()">Allocate objects</button>
-            <button class="button" onclick="crashme.domCrash()">Create many DOM elements</button>
-            <button class="button" onclick="crashme.recursiveCrash()">Execute an infinite recursion</button>
-            <button class="button" onclick="crashme.loopCrash()">Execute an infinite loop</button>
+            <button class="button" onclick="crashmeSimulation.memoryCrash()">Allocate objects</button>
+            <button class="button" onclick="crashmeSimulation.domCrash()">Create many DOM elements</button>
+            <button class="button" onclick="crashmeSimulation.recursiveCrash()">Execute an infinite recursion</button>
+            <button class="button" onclick="crashmeSimulation.loopCrash()">Execute an infinite loop</button>
         </div>
         <div class="block is-hidden" id="crashes-block">
             <div class="block">
@@ -48,9 +48,9 @@
 </section>
 
 
-<script src="detect-crashes/client-controller.js"></script>
+<script src="dist/bundle.js"></script>
 <script src="crash-simulation.js"></script>
-<script src="app.js"></script>
+<script src="app.js" type="module"></script>
 
 </body>
 </html>

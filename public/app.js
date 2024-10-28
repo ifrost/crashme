@@ -38,8 +38,33 @@
 
     function start() {
         document.getElementById("deleteCrashes").onclick = clearCrashes
-        setInterval(reloadCrashes, 1000)
+        setInterval(reloadCrashes, 1000);
     }
 
     window.addEventListener("load", start);
+
+    crashme.initCrashDetection({
+        id: Math.random().toString(36).substr(2, 5),
+        createClientWorker() {
+            return new Worker(new URL('/app/app.worker.js', import.meta.url));
+        },
+
+        createDetectorWorker() {
+            return new SharedWorker(new URL('/app/app.detector.worker.js', import.meta.url));
+        },
+
+        updateInfo(tab) {
+            tab.url = window.location.url;
+        },
+
+        reportCrash(tab) {
+            fetch("/crash", {
+                method: "POST", body: JSON.stringify(tab), headers: {
+                    "Content-Type": "application/json"
+                }
+            })
+            return true;
+        }
+    })
+
 })()

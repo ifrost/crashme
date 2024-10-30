@@ -4,7 +4,7 @@
   "main": "dist/lib.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "webpack",
+    "build": "webpack -c webpack.prod.config.js",
     "dev": "webpack -w -c webpack.dev.config.js",
     "server": "node server.js",
     "start": "webpack serve --open --mode development"
@@ -30,6 +30,8 @@
   "homepage": "https://github.com/ifrost/crashme#readme",
   "files": [
     "README.md",
-    "dist"
+    "dist",
+    "package.json",
+    "package-lock.json"
   ]
 }

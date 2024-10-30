@@ -1,11 +1,11 @@
 const path = require('path');
 
 module.exports = {
-    entry: './public/lib/index.ts', // Your entry point
+    entry: './public/lib/index.ts',
     output: {
         filename: 'lib.js',
         path: path.resolve(__dirname, 'dist'),
-        clean: true, // Clean the output directory before emit
+        clean: true,
         library: 'crashme',
         libraryTarget: 'umd',
         globalObject: 'this',
@@ -17,7 +17,14 @@ module.exports = {
         rules: [
             {
                 test: /\.ts$/,
-                use: 'ts-loader',
+                use: [
+                    {
+                        loader: 'ts-loader',
+                        options: {
+                            configFile: 'tsconfig.prod.json',
+                        }
+                    }
+                ],
                 exclude: /node_modules/,
             },
         ],

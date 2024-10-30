@@ -13,6 +13,11 @@ export function initClientWorker(options: ClientWorkerOptions) {
   let db;
 
   setInterval(() => {
+    if (!db) {
+      // not started yet
+      return;
+    }
+
     if (lastInfo?.id) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');

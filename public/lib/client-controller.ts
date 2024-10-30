@@ -48,13 +48,18 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
     });
   }
 
-  function registerWorker() {
+  function registerWorkers() {
     worker = options.createClientWorker();
     worker.addEventListener('message', updateInfo);
 
     detector = options.createDetectorWorker();
     detector.port.addEventListener('message', handleDetectorMessage);
     detector.port.start();
+  }
+
+  function unregisterWorkers() {
+    worker.removeEventListener('message', updateInfo);
+    detector.port.removeEventListener('message', handleDetectorMessage);
   }
 
   function startWhenReady() {
@@ -66,13 +71,14 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
     window.removeEventListener('click', start);
     initialize();
 
-    registerWorker();
+    registerWorkers();
 
     window.addEventListener('beforeunload', () => {
       worker.postMessage({
         event: 'close',
         info,
       });
+      unregisterWorkers();
     });
 
     worker.postMessage({

@@ -9,5 +9,5 @@
     "forceConsistentCasingInFileNames": true,
     "declaration": false
   },
-  "include": ["public/lib/*"]
+  "include": ["public/*"]
 }

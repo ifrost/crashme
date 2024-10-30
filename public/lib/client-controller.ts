@@ -19,7 +19,7 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
   let detector;
   let info = {};
 
-  async function reportCrash(event) {
+  async function handleDetectorMessage(event) {
     if (event.data.event === 'crash-detected' && event.data.reporter.id === info.id) {
       const tab = event.data.tab;
       const success = await options.reportCrash(tab);
@@ -51,8 +51,9 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
   function registerWorker() {
     worker = options.createClientWorker();
     worker.addEventListener('message', updateInfo);
+
     detector = options.createDetectorWorker();
-    detector.port.addEventListener('message', reportCrash);
+    detector.port.addEventListener('message', handleDetectorMessage);
     detector.port.start();
   }
 

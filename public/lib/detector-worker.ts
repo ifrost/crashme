@@ -10,9 +10,9 @@ type DetectorWorkerOptions = {
 export function initDetectorWorker(options: DetectorWorkerOptions) {
   let db;
   let started = false;
-  let clients = [];
+  let openPorts = [];
 
-  function crashReported(event) {
+  function handleMessageFromReporter(event) {
     if (event.data.event === 'crash-reported' && event.data.id) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
@@ -50,20 +50,17 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
         return;
       }
 
-      let candidate = activeTabs.pop();
+      // use only one tab for reporting
+      let reporter = activeTabs.pop();
       tabs.forEach(function (tab) {
         const workerInactivity = Date.now() - tab.workerLastActive;
         if (workerInactivity > INACTIVITY_THRESHOLD) {
-          reportCrash(tab, candidate);
+          openPorts.forEach(function (port) {
+            port.postMessage({ event: 'crash-detected', tab, reporter });
+          });
         }
       });
     };
-  }
-
-  function reportCrash(tab, reporter) {
-    clients.forEach(function (port) {
-      port.postMessage({ event: 'crash-detected', tab, reporter });
-    });
   }
 
   self.onconnect = async function (event) {
@@ -71,11 +68,11 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
       db = await getDb(options.dbName);
 
       const port = event.ports[0];
-      clients.push(port);
+      openPorts.push(port);
+      port.addEventListener('message', handleMessageFromReporter);
       port.start();
-      port.onmessage = crashReported;
       port.onclose = function () {
-        clients = clients.filter((p) => p !== port);
+        openPorts = openPorts.filter((p) => p !== port);
       };
 
       setInterval(checkStaleTabs, INACTIVITY_THRESHOLD);

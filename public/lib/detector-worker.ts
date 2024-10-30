@@ -70,10 +70,10 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
       const port = event.ports[0];
       openPorts.push(port);
       port.addEventListener('message', handleMessageFromReporter);
-      port.start();
-      port.onclose = function () {
+      port.addEventListener('close', () => {
         openPorts = openPorts.filter((p) => p !== port);
-      };
+      })
+      port.start();
 
       setInterval(checkStaleTabs, INACTIVITY_THRESHOLD);
       started = true;

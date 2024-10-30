@@ -63,6 +63,7 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
   }
 
   async function start() {
+    window.removeEventListener('click', start);
     initialize();
 
     registerWorker();
@@ -80,6 +81,7 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
     });
   }
 
+  // main entry point
   if (document.readyState === 'complete') {
     startWhenReady();
   } else {

@@ -8,49 +8,50 @@
 
 <section class="section">
     <div class="container">
-        <h1 class="title">
-            Hi! I am <span id="title">...</span> :)
+        <h1 class="title" id="title">
+           Click anywhere on the to initialize...
         </h1>
-        <p class="subtitle">
-            Crash me!
-        </p>
-        <div class="block">
-            Pick your weapon:
-        </div>
-        <div class="buttons">
-            <button class="button" onclick="crashmeSimulation.memoryCrash()">Allocate objects</button>
-            <button class="button" onclick="crashmeSimulation.domCrash()">Create many DOM elements</button>
-            <button class="button" onclick="crashmeSimulation.recursiveCrash()">Execute an infinite recursion</button>
-            <button class="button" onclick="crashmeSimulation.loopCrash()">Execute an infinite loop</button>
-        </div>
-        <div class="block is-hidden" id="crashes-block">
+        <div id="main" class="is-hidden">
+            <p class="subtitle">
+                Crash me!
+            </p>
             <div class="block">
-                Crashes:
+                Pick your weapon:
             </div>
-            <table class="table" id="crashes-table">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>URL</th>
-                    <th>Last active</th>
-                    <th>Memory report</th>
-                </tr>
-                </thead>
-                <tbody id="crashes-body">
-
-                </tbody>
-            </table>
             <div class="buttons">
-                <button class="button is-danger" id="deleteCrashes">Delete all</button>
+                <button id="btn-mem" class="button">Allocate objects</button>
+                <button id="btn-dom" class="button">Create many DOM elements</button>
+                <button id="btn-rec" class="button">Execute an infinite recursion</button>
+                <button id="btn-loop" class="button">Execute an infinite loop</button>
+            </div>
+            <div class="block is-hidden" id="crashes-block">
+                <div class="block">
+                    Crashes:
+                </div>
+                <table class="table" id="crashes-table">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>URL</th>
+                        <th>Last active</th>
+                        <th>Memory report</th>
+                    </tr>
+                    </thead>
+                    <tbody id="crashes-body">
+
+                    </tbody>
+                </table>
+                <div class="buttons">
+                    <button class="button is-danger" id="deleteCrashes">Delete all</button>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 
-<script src="dist/bundle.js"></script>
-<script src="crash-simulation.js"></script>
-<script src="app.js" type="module"></script>
+<script src="dist/lib.js"></script>
+<script src="dist/app.js" type="module"></script>
 
 </body>
 </html>

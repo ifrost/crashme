@@ -8,7 +8,11 @@ type CrashDetectionOptions<CustomProperties> = {
   createClientWorker: () => Worker;
 };
 
-export function initCrashDetection<CustomProperties extends object = {}>(
+export type BasicReport = {
+  id: string;
+}
+
+export function initCrashDetection<CustomProperties extends BasicReport>(
   options: CrashDetectionOptions<CustomProperties>
 ) {
   let worker;

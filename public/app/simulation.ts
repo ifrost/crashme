@@ -2,10 +2,10 @@
  * A set of functions that can be used to simulate expensive operations that may crash of freeze the browser
  */
 
-const crashmeSimulation = {
+export const crashmeSimulation = {
     memoryCrash: function () {
-        let dump = [];
-        let dumps = {};
+        let dump: Array<object | number> = [];
+        let dumps: Record<number, object> = {};
 
         setInterval(() => {
             for (let i = 0; i < 1000000; i++) {
@@ -24,9 +24,9 @@ const crashmeSimulation = {
         }
     },
     recursiveCrash: function() {
-        crashme.recursiveCrash();
-        crashme.recursiveCrash();
-        crashme.recursiveCrash();
+        this.recursiveCrash();
+        this.recursiveCrash();
+        this.recursiveCrash();
     },
     domCrash: function() {
         const div = document.createElement("div");

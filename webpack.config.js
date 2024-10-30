@@ -1,18 +1,18 @@
 const path = require('path');
 
 module.exports = {
-    entry: './public/v2/index.ts', // Your entry point
+    entry: {
+        app: './public/app/app.ts',
+        lib: './public/lib/index.ts'
+    },
     output: {
-        filename: 'bundle.js',
+        filename: '[name].js',
         path: path.resolve(__dirname, 'dist'),
-        clean: true, // Clean the output directory before emit
-        library: 'crashme',
-        libraryTarget: 'umd',
-        globalObject: 'this',
     },
     resolve: {
         extensions: ['.ts', '.js'],
     },
+    devtool: 'eval-source-map',
     module: {
         rules: [
             {
@@ -21,6 +21,13 @@ module.exports = {
                 exclude: /node_modules/,
             },
         ],
+    },
+    devServer: {
+        static: {
+            directory: path.join(__dirname, 'dist')
+        },
+        compress: true,
+        port: 9000,
     },
     mode: 'development', // Use 'development' for unminified output
 };

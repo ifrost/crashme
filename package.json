@@ -8,7 +8,7 @@
     "dev": "webpack -w -c webpack.dev.config.js",
     "server": "node server.js",
     "start": "webpack serve --open --mode development",
-    "preversion": "npm run build"
+    "preversion": "npm run build && git add -A ."
   },
   "author": "",
   "license": "ISC",

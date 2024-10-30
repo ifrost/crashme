@@ -45,6 +45,7 @@ export function initClientWorker(options: ClientWorkerOptions) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
       store.delete(event.data.info.id);
+      db = undefined;
     }
   });
 

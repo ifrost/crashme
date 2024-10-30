@@ -1,18 +1,18 @@
 const path = require('path');
 
 module.exports = {
-    entry: {
-        app: './public/app/app.ts',
-        lib: './public/lib/index.ts'
-    },
+    entry: './public/lib/index.ts', // Your entry point
     output: {
-        filename: '[name].js',
+        filename: 'lib.js',
         path: path.resolve(__dirname, 'dist'),
+        clean: true, // Clean the output directory before emit
+        library: 'crashme',
+        libraryTarget: 'umd',
+        globalObject: 'this',
     },
     resolve: {
         extensions: ['.ts', '.js'],
     },
-    devtool: 'eval-source-map',
     module: {
         rules: [
             {
@@ -22,12 +22,5 @@ module.exports = {
             },
         ],
     },
-    devServer: {
-        static: {
-            directory: path.join(__dirname, 'dist')
-        },
-        compress: true,
-        port: 9000,
-    },
-    mode: 'development', // Use 'development' for unminified output
+    mode: 'production', // Use 'development' for unminified output
 };

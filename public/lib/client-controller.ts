@@ -1,11 +1,15 @@
 // @ts-nocheck
 
+import {getDb} from "./utils";
+
 type CrashDetectionOptions<CustomProperties> = {
   id: string;
+  dbName: string;
   reportCrash: (crashedTab: CustomProperties) => Promise<boolean>;
   updateInfo: (currentTab: CustomProperties) => void;
   createDetectorWorker: () => SharedWorker;
   createClientWorker: () => Worker;
+  log?: (log: Record<string, string | boolean | number>) => void;
 };
 
 export type BasicReport = {
@@ -18,12 +22,22 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
   let worker;
   let detector;
   let info = {};
+  let db;
+
+  const log = (log: Record<string, string | boolean>) => {
+    log.id = info.id;
+    options.log?.(log)
+  }
 
   async function handleDetectorMessage(event) {
     if (event.data.event === 'crash-detected' && event.data.reporter.id === info.id) {
+      log({ event: 'crash-detected'})
       const tab = event.data.tab;
       const success = await options.reportCrash(tab);
+      log({ event: 'crash-reported', success })
+
       if (success) {
+        log({ event: 'crash-report-confirmed' })
         detector.port.postMessage({ event: 'crash-reported', id: event.data.tab.id });
       }
     }
@@ -42,6 +56,7 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
    */
   function updateInfo() {
     options.updateInfo(info);
+    log({ event: 'updated' })
     worker.postMessage({
       event: 'update',
       info,
@@ -64,30 +79,43 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
 
   function startWhenReady() {
     // beforeunload is triggered only after at least one interaction
+    log({ event: 'loaded'});
     window.addEventListener('click', start);
   }
 
   async function start() {
+    log({ event: 'started'})
+
     window.removeEventListener('click', start);
     initialize();
 
     registerWorkers();
 
     window.addEventListener('beforeunload', () => {
+      log({ event: 'unloaded'})
+
+      // to avoid any delays clean-up happens in the current tab as well
+      const transaction = db.transaction(['tabs'], 'readwrite');
+      const store = transaction.objectStore('tabs');
+      store.delete(info.id);
+
       worker.postMessage({
         event: 'close',
         info,
       });
       unregisterWorkers();
+      log({ event: 'unloaded-done'})
     });
 
     worker.postMessage({
       event: 'start',
       info,
     });
+    log({ event: 'started-done'})
   }
 
   // main entry point
+  getDb(options.dbName).then(result => db = result)
   if (document.readyState === 'complete') {
     startWhenReady();
   } else {

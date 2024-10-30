@@ -14,6 +14,8 @@ export function startReportingCrashes() {
     initCrashDetection<TabInfo>({
         id: generateRandomName(),
 
+        dbName: 'crashme.crashes',
+
         createClientWorker: () => {
             logger.log({ event: 'client worker created'})
             return new Worker(new URL('./client.worker', import.meta.url));
@@ -33,6 +35,11 @@ export function startReportingCrashes() {
                 }
             });
             return true;
+        },
+
+        log: (log: Record<string, string | boolean | number>) => {
+            console.log(log);
+            logger.log(log);
         },
 
         updateInfo: (info) => {

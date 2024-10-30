@@ -1,4 +1,5 @@
 import {initCrashDetection} from "../lib";
+import {generateRandomName} from "./names";
 
 type TabInfo = {
     id: string;
@@ -8,14 +9,14 @@ type TabInfo = {
 
 export function startReportingCrashes() {
     initCrashDetection<TabInfo>({
-        id: Math.random().toString(36).substr(2, 5),
+        id: generateRandomName(),
 
         createClientWorker: () => {
-            return new Worker(new URL('./app.worker', import.meta.url));
+            return new Worker(new URL('./client.worker', import.meta.url));
         },
 
         createDetectorWorker: () => {
-            return new SharedWorker(new URL('./app.detector.worker', import.meta.url));
+            return new SharedWorker(new URL('./detector.worker', import.meta.url));
         },
 
         reportCrash: async (tab) => {

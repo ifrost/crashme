@@ -1,4 +1,4 @@
-import { startReportingCrashes } from "./app.reporter";
+import { startReportingCrashes } from "./crash.detection.config";
 import { crashmeSimulation } from "./simulation";
 
 type CrashReport = {

@@ -22,5 +22,5 @@ module.exports = {
             },
         ],
     },
-    mode: 'production', // Use 'development' for unminified output
+    mode: 'production',
 };

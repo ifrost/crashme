@@ -4,7 +4,7 @@ const app = express();
 let crashes = [];
 
 app.use('/', express.static('public'))
-app.use('/dist', express.static('dist'))
+app.use('/', express.static('dev'))
 app.use(express.json());
 
 function log(obj) {

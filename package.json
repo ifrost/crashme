@@ -6,6 +6,7 @@
   "scripts": {
     "build": "webpack",
     "dev": "webpack -w",
+    "server": "node server.js",
     "start": "webpack serve --open --mode development"
   },
   "author": "",

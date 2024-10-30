@@ -273,6 +273,7 @@ function initClientWorker(options) {
                         transaction = db.transaction(['tabs'], 'readwrite');
                         store = transaction.objectStore('tabs');
                         store.delete(event.data.info.id);
+                        db = undefined;
                     }
                     return [2 /*return*/];
             }

@@ -100,8 +100,6 @@ export function initCrashDetection<CustomStateReport extends BaseStateReport>(
     registerWorkers();
 
     window.addEventListener('beforeunload', () => {
-      log({ event: 'unloaded' });
-
       // to avoid any delays clean-up happens in the current tab as well
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');

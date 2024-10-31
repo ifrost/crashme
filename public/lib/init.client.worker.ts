@@ -7,6 +7,15 @@ type ClientWorkerOptions = {
   dbName: string;
 };
 
+/**
+ * Main logic of the Web Worker running with the tab. Create a separate file for the worker with code:
+ *
+ * initClientWorker({
+ *   dbName: 'NAME OF YOUR DB',
+ *   pingInterval: 1000,
+ * });
+ *
+ */
 export function initClientWorker(options: ClientWorkerOptions) {
   let lastInfo;
   let tabLastActive = Date.now();

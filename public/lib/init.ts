@@ -1,65 +1,11 @@
 // @ts-nocheck
 
 import { getDb } from './utils';
-
-type CrashDetectionOptions<CustomProperties> = {
-  /**
-   * Unique id of a tab
-   */
-  id: string;
-
-  /**
-   * Name of the database used to store the data (needs to be the same for all components)
-   */
-  dbName: string;
-
-  /**
-   * Report a crash (e.g. over HTTP). Needs to return true if reporting was successful.
-   * If reporting was not successful the detector will try to report the crash again.
-   */
-  reportCrash: (crashedTab: CustomProperties) => Promise<boolean>;
-
-  /**
-   * Report a stale tab (e.g. over HTTP). Needs to return true if reporting was successful.
-   * If reporting was not successful the detector will try to report the stale tab again.
-   */
-  reportStaleTab?: (crashedTab: CustomProperties) => Promise<boolean>;
-
-  /**
-   * Modify currentTab param with any parameters about the current tab needed to be reported back
-   */
-  updateInfo: (currentTab: CustomProperties) => void;
-
-  /**
-   * Create the shared detector worker (see detector-worker.js)
-   * Should be just:
-   *   return new SharedWorker(new URL('./detector.worker', import.meta.url));
-   */
-  createDetectorWorker: () => SharedWorker;
-
-  /**
-   * Create the client worker (see client-worker.js)
-   * Should be just:
-   *   return new Worker(new URL('./client.worker', import.meta.url));
-   */
-  createClientWorker: () => Worker;
-
-  /**
-   * Additional log for debugging
-   */
-  log?: (log: Record<string, string | boolean | number>) => void;
-};
+import { BasicReport, CrashDetectionOptions } from './types';
 
 /**
- * Each report will container BasicReport. You can enrich the data in updateInfo handler
+ * Main function to initialize crash detection. This should be run from the main thread of the tab.
  */
-export type BasicReport = {
-  id: string;
-  tabLastActive: number;
-  tabFirstActive: number;
-  workerLastActive: number;
-};
-
 export function initCrashDetection<CustomProperties extends BasicReport>(
   options: CrashDetectionOptions<CustomProperties>
 ) {
@@ -112,7 +58,7 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
    */
   function updateInfo() {
     options.updateInfo(info);
-    log({ event: 'updated' });
+    //log({ event: 'updated' });
     worker.postMessage({
       event: 'update',
       info,

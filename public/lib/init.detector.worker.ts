@@ -1,32 +1,19 @@
 // @ts-nocheck
 
 import { getDb } from './utils';
+import { DetectorWorkerOptions } from './types';
 
-type DetectorWorkerOptions = {
-  /**
-   * Name of the database used to store the data (needs to be the same for all components)
-   */
-  dbName: string;
-
-  /**
-   * If the web worker thread of the tab is inactive longer than the threshold and the tab was not successfully closed
-   * it's marked as crashed and can be reported. This number needs be bigger than pingInterval of the web worker.
-   */
-  crashThreshold: number;
-
-  /**
-   * If the main thread of the tab is inactive longer than the threshold it's marked as stale and can be reported.
-   * It doesn't mean the tab crashed but indicates the main thread was blocked for given time. This may be due to
-   * extensive processing or because the thread was paused with a debugger.
-   */
-  staleThreshold: number;
-
-  /**
-   * How often detection logic will be triggered
-   */
-  interval: number;
-};
-
+/**
+ * Main logic of the Shared Worker responsible for detecting crashes. Create a separate file for the worker with code:
+ *
+ * initDetectorWorker({
+ *   dbName: 'NAME OF YOUR DB',
+ *   staleThreshold: 60000,
+ *   crashThreshold: 5000,
+ *   interval: 5000,
+ * });
+ *
+ */
 export function initDetectorWorker(options: DetectorWorkerOptions) {
   let db;
   let started = false;

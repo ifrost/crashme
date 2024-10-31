@@ -1,1 +1,1 @@
-export declare function getDb(dbName: string): Promise<unknown>;
+export declare function getDb(dbName: string): Promise<IDBDatabase>;

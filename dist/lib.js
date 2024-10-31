@@ -12,6 +12,103 @@ return /******/ (() => { // webpackBootstrap
 /******/ 	"use strict";
 /******/ 	var __webpack_modules__ = ({
 
+/***/ "./public/lib/events.ts":
+/*!******************************!*\
+  !*** ./public/lib/events.ts ***!
+  \******************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   createCloseEvent: () => (/* binding */ createCloseEvent),
+/* harmony export */   createCrashDetectedEvent: () => (/* binding */ createCrashDetectedEvent),
+/* harmony export */   createCrashReportedEvent: () => (/* binding */ createCrashReportedEvent),
+/* harmony export */   createPingEvent: () => (/* binding */ createPingEvent),
+/* harmony export */   createStaleTabDetectedEvent: () => (/* binding */ createStaleTabDetectedEvent),
+/* harmony export */   createStaleTabReportedEvent: () => (/* binding */ createStaleTabReportedEvent),
+/* harmony export */   createStartEvent: () => (/* binding */ createStartEvent),
+/* harmony export */   createUpdateEvent: () => (/* binding */ createUpdateEvent),
+/* harmony export */   isCloseEvent: () => (/* binding */ isCloseEvent),
+/* harmony export */   isCrashDetectedEvent: () => (/* binding */ isCrashDetectedEvent),
+/* harmony export */   isCrashReportedEvent: () => (/* binding */ isCrashReportedEvent),
+/* harmony export */   isPingEvent: () => (/* binding */ isPingEvent),
+/* harmony export */   isStaleTabDetectedEvent: () => (/* binding */ isStaleTabDetectedEvent),
+/* harmony export */   isStaleTabReportedEvent: () => (/* binding */ isStaleTabReportedEvent),
+/* harmony export */   isStartEvent: () => (/* binding */ isStartEvent),
+/* harmony export */   isUpdateEvent: () => (/* binding */ isUpdateEvent)
+/* harmony export */ });
+function isStartEvent(event) {
+    return (event === null || event === void 0 ? void 0 : event.event) === 'start';
+}
+function createStartEvent(info) {
+    return {
+        event: 'start',
+        info: info,
+    };
+}
+function createPingEvent() {
+    return { event: 'ping' };
+}
+function isPingEvent(event) {
+    return (event === null || event === void 0 ? void 0 : event.event) === 'ping';
+}
+function isUpdateEvent(event) {
+    return (event === null || event === void 0 ? void 0 : event.event) === 'update';
+}
+function createUpdateEvent(info) {
+    return { event: 'update', info: info };
+}
+function isCloseEvent(event) {
+    return (event === null || event === void 0 ? void 0 : event.event) === 'close';
+}
+function createCloseEvent(info) {
+    return {
+        event: 'close',
+        info: info,
+    };
+}
+function isCrashDetectedEvent(event) {
+    return (event === null || event === void 0 ? void 0 : event.event) === 'crash-detected';
+}
+function createCrashDetectedEvent(tab, reporter) {
+    return {
+        event: 'crash-detected',
+        tab: tab,
+        reporter: reporter,
+    };
+}
+function isStaleTabDetectedEvent(event) {
+    return (event === null || event === void 0 ? void 0 : event.event) === 'stale-tab-detected';
+}
+function createStaleTabDetectedEvent(tab, reporter) {
+    return {
+        event: 'stale-tab-detected',
+        tab: tab,
+        reporter: reporter,
+    };
+}
+function isCrashReportedEvent(event) {
+    return (event === null || event === void 0 ? void 0 : event.event) === 'crash-reported';
+}
+function createCrashReportedEvent(id) {
+    return {
+        event: 'crash-reported',
+        id: id,
+    };
+}
+function isStaleTabReportedEvent(event) {
+    return (event === null || event === void 0 ? void 0 : event.event) === 'stale-tab-reported';
+}
+function createStaleTabReportedEvent(tab) {
+    return {
+        event: 'stale-tab-reported',
+        tab: tab,
+    };
+}
+
+
+/***/ }),
+
 /***/ "./public/lib/init.client.worker.ts":
 /*!******************************************!*\
   !*** ./public/lib/init.client.worker.ts ***!
@@ -23,7 +120,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   initClientWorker: () => (/* binding */ initClientWorker)
 /* harmony export */ });
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./public/lib/utils.ts");
-// @ts-nocheck
+/* harmony import */ var _events__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./events */ "./public/lib/events.ts");
 var __assign = (undefined && undefined.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -72,6 +169,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
     }
 };
 
+
 /**
  * Main logic of the Web Worker running with the tab. Create a separate file for the worker with code:
  *
@@ -83,7 +181,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
  */
 function initClientWorker(options) {
     var _this = this;
-    var lastInfo;
+    var lastStateReport;
     var tabLastActive = Date.now();
     var db;
     setInterval(function () {
@@ -91,37 +189,38 @@ function initClientWorker(options) {
             // not started yet
             return;
         }
-        if (lastInfo === null || lastInfo === void 0 ? void 0 : lastInfo.id) {
+        if (lastStateReport === null || lastStateReport === void 0 ? void 0 : lastStateReport.id) {
             var transaction = db.transaction(['tabs'], 'readwrite');
             var store = transaction.objectStore('tabs');
             var workerLastActive = Date.now();
             // save latest received info here - the tab may be paused because of debugging but we need to mark the tab as alive anyway because the worker is still alive
-            store.put(__assign(__assign({}, structuredClone(lastInfo)), { tabLastActive: tabLastActive, workerLastActive: workerLastActive }));
+            store.put(__assign(__assign({}, structuredClone(lastStateReport)), { tabLastActive: tabLastActive, workerLastActive: workerLastActive }));
         }
         // ping to tab so it can send latest values
         // saving will happen on the next pingInterval
-        postMessage({ event: 'ping' });
+        var pingEvent = (0,_events__WEBPACK_IMPORTED_MODULE_1__.createPingEvent)();
+        postMessage(pingEvent);
     }, options.pingInterval);
-    addEventListener('message', function (event) { return __awaiter(_this, void 0, void 0, function () {
+    addEventListener('message', function (message) { return __awaiter(_this, void 0, void 0, function () {
         var transaction, store;
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (event.data.event === 'update') {
+                    if ((0,_events__WEBPACK_IMPORTED_MODULE_1__.isUpdateEvent)(message.data)) {
                         tabLastActive = Date.now();
-                        lastInfo = structuredClone(event.data.info);
+                        lastStateReport = structuredClone(message.data.info);
                         // saving cannot happen here because message may not be sent when tab is paused (e.g. while debugging)
                     }
-                    if (!(event.data.event === 'start')) return [3 /*break*/, 2];
+                    if (!(0,_events__WEBPACK_IMPORTED_MODULE_1__.isStartEvent)(message.data)) return [3 /*break*/, 2];
                     return [4 /*yield*/, (0,_utils__WEBPACK_IMPORTED_MODULE_0__.getDb)(options.dbName)];
                 case 1:
                     db = _a.sent();
                     _a.label = 2;
                 case 2:
-                    if (event.data.event === 'close') {
+                    if ((0,_events__WEBPACK_IMPORTED_MODULE_1__.isCloseEvent)(message.data) && db) {
                         transaction = db.transaction(['tabs'], 'readwrite');
                         store = transaction.objectStore('tabs');
-                        store.delete(event.data.info.id);
+                        store.delete(message.data.info.id);
                         db = undefined;
                     }
                     return [2 /*return*/];
@@ -144,7 +243,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   initDetectorWorker: () => (/* binding */ initDetectorWorker)
 /* harmony export */ });
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./public/lib/utils.ts");
-// @ts-nocheck
+/* harmony import */ var _events__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./events */ "./public/lib/events.ts");
 var __assign = (undefined && undefined.__assign) || function () {
     __assign = Object.assign || function(t) {
         for (var s, i = 1, n = arguments.length; i < n; i++) {
@@ -193,6 +292,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
     }
 };
 
+
 /**
  * Main logic of the Shared Worker responsible for detecting crashes. Create a separate file for the worker with code:
  *
@@ -209,15 +309,15 @@ function initDetectorWorker(options) {
     var started = false;
     var openPorts = [];
     function handleMessageFromReporter(event) {
-        if (event.data.event === 'crash-reported' && event.data.id) {
+        if ((0,_events__WEBPACK_IMPORTED_MODULE_1__.isCrashReportedEvent)(event.data)) {
             var transaction = db.transaction(['tabs'], 'readwrite');
             var store = transaction.objectStore('tabs');
             store.delete(event.data.id);
         }
-        if (event.data.event === 'stale-tab-reported' && event.data.tab) {
+        if ((0,_events__WEBPACK_IMPORTED_MODULE_1__.isStaleTabReportedEvent)(event.data)) {
             var transaction = db.transaction(['tabs'], 'readwrite');
             var store = transaction.objectStore('tabs');
-            store.store(__assign(__assign({}, event.data.tab), { staleReported: true }));
+            store.put(__assign(__assign({}, event.data.tab), { staleReported: true }));
         }
     }
     /**
@@ -250,20 +350,22 @@ function initDetectorWorker(options) {
                 return;
             }
             // use only one tab for reporting
-            var reporter = activeTabs.pop();
+            var reporter = activeTabs.pop(); // must be defined based on the check above
             inactiveTabs.forEach(function (tab) {
                 openPorts.forEach(function (port) {
-                    port.postMessage({ event: 'crash-detected', tab: tab, reporter: reporter });
+                    var event = (0,_events__WEBPACK_IMPORTED_MODULE_1__.createCrashDetectedEvent)(tab, reporter);
+                    port.postMessage(event);
                 });
             });
             staleTabs.forEach(function (tab) {
                 openPorts.forEach(function (port) {
-                    port.postMessage({ event: 'stale-tab-detected', tab: tab, reporter: reporter });
+                    var event = (0,_events__WEBPACK_IMPORTED_MODULE_1__.createStaleTabDetectedEvent)(tab, reporter);
+                    port.postMessage(event);
                 });
             });
         };
     }
-    self.onconnect = function (event) {
+    self.addEventListener('connect', function (event) {
         return __awaiter(this, void 0, void 0, function () {
             var port_1;
             return __generator(this, function (_a) {
@@ -287,7 +389,7 @@ function initDetectorWorker(options) {
                 }
             });
         });
-    };
+    });
 }
 
 
@@ -304,7 +406,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   initCrashDetection: () => (/* binding */ initCrashDetection)
 /* harmony export */ });
 /* harmony import */ var _utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./utils */ "./public/lib/utils.ts");
-// @ts-nocheck
+/* harmony import */ var _events__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./events */ "./public/lib/events.ts");
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -342,48 +444,47 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
     }
 };
 
+
 /**
  * Main function to initialize crash detection. This should be run from the main thread of the tab.
  */
 function initCrashDetection(options) {
     var worker;
     var detector;
-    var info = {};
+    var stateReport = {};
     var db;
     var log = function (log) {
         var _a;
-        log.id = info.id;
+        log.id = String(stateReport.id);
         (_a = options.log) === null || _a === void 0 ? void 0 : _a.call(options, log);
     };
-    function handleDetectorMessage(event) {
+    function handleDetectorMessage(message) {
         return __awaiter(this, void 0, void 0, function () {
-            var tab, success, tab, success;
+            var tab, success, crashReportedEvent, tab, success, staleTabReportedEvent;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (!(event.data.event === 'crash-detected' && event.data.reporter.id === info.id)) return [3 /*break*/, 2];
-                        log({ event: 'crash-detected' });
-                        tab = event.data.tab;
+                        if (!((0,_events__WEBPACK_IMPORTED_MODULE_1__.isCrashDetectedEvent)(message.data) && message.data.reporter.id === stateReport.id)) return [3 /*break*/, 2];
+                        tab = message.data.tab;
                         return [4 /*yield*/, options.reportCrash(tab)];
                     case 1:
                         success = _a.sent();
-                        log({ event: 'crash-reported', success: success });
                         if (success) {
-                            log({ event: 'crash-report-confirmed' });
-                            detector.port.postMessage({ event: 'crash-reported', id: event.data.tab.id });
+                            crashReportedEvent = (0,_events__WEBPACK_IMPORTED_MODULE_1__.createCrashReportedEvent)(message.data.tab.id);
+                            detector.port.postMessage(crashReportedEvent);
                         }
                         _a.label = 2;
                     case 2:
-                        if (!(options.reportStaleTab && event.data.event === 'stale-tab-detected' && event.data.reporter.id === info.id)) return [3 /*break*/, 4];
-                        log({ event: 'stale-tab-detected' });
-                        tab = event.data.tab;
+                        if (!(options.reportStaleTab &&
+                            (0,_events__WEBPACK_IMPORTED_MODULE_1__.isStaleTabDetectedEvent)(message.data) &&
+                            message.data.reporter.id === stateReport.id)) return [3 /*break*/, 4];
+                        tab = message.data.tab;
                         return [4 /*yield*/, options.reportStaleTab(tab)];
                     case 3:
                         success = _a.sent();
-                        log({ event: 'stale-tab-reported', success: success });
                         if (success) {
-                            log({ event: 'stale-tab-confirmed' });
-                            detector.port.postMessage({ event: 'stale-tab-reported', id: event.data.tab.id });
+                            staleTabReportedEvent = (0,_events__WEBPACK_IMPORTED_MODULE_1__.createStaleTabReportedEvent)(message.data.tab);
+                            detector.port.postMessage(staleTabReportedEvent);
                         }
                         _a.label = 4;
                     case 4: return [2 /*return*/];
@@ -395,61 +496,53 @@ function initCrashDetection(options) {
      * Generate id for the tab
      */
     function initialize() {
-        info.id = options.id;
-        info.tabFirstActive = Date.now();
+        stateReport.id = options.id;
+        stateReport.tabFirstActive = Date.now();
     }
     /**
      * Update latest state of the tab
      */
-    function updateInfo() {
-        options.updateInfo(info);
-        //log({ event: 'updated' });
-        worker.postMessage({
-            event: 'update',
-            info: info,
-        });
+    function handleWebWorkerMessage(message) {
+        if ((0,_events__WEBPACK_IMPORTED_MODULE_1__.isPingEvent)(message.data)) {
+            // info should have all required info when passed here
+            options.updateInfo(stateReport);
+            var updateEvent = (0,_events__WEBPACK_IMPORTED_MODULE_1__.createUpdateEvent)(stateReport);
+            worker.postMessage(updateEvent);
+        }
     }
     function registerWorkers() {
         worker = options.createClientWorker();
-        worker.addEventListener('message', updateInfo);
+        worker.addEventListener('message', handleWebWorkerMessage);
         detector = options.createDetectorWorker();
         detector.port.addEventListener('message', handleDetectorMessage);
         detector.port.start();
     }
     function unregisterWorkers() {
-        worker.removeEventListener('message', updateInfo);
+        worker.removeEventListener('message', handleWebWorkerMessage);
         detector.port.removeEventListener('message', handleDetectorMessage);
     }
     function startWhenReady() {
         // beforeunload is triggered only after at least one interaction
-        log({ event: 'loaded' });
         window.addEventListener('click', start);
     }
     function start() {
         return __awaiter(this, void 0, void 0, function () {
+            var startEvent;
             return __generator(this, function (_a) {
-                log({ event: 'started' });
                 window.removeEventListener('click', start);
                 initialize();
                 registerWorkers();
                 window.addEventListener('beforeunload', function () {
-                    log({ event: 'unloaded' });
                     // to avoid any delays clean-up happens in the current tab as well
                     var transaction = db.transaction(['tabs'], 'readwrite');
                     var store = transaction.objectStore('tabs');
-                    store.delete(info.id);
-                    worker.postMessage({
-                        event: 'close',
-                        info: info,
-                    });
+                    store.delete(stateReport.id);
+                    var closeEvent = (0,_events__WEBPACK_IMPORTED_MODULE_1__.createCloseEvent)(stateReport);
+                    worker.postMessage(closeEvent);
                     unregisterWorkers();
-                    log({ event: 'unloaded-done' });
                 });
-                worker.postMessage({
-                    event: 'start',
-                    info: info,
-                });
-                log({ event: 'started-done' });
+                startEvent = (0,_events__WEBPACK_IMPORTED_MODULE_1__.createStartEvent)(stateReport);
+                worker.postMessage(startEvent);
                 return [2 /*return*/];
             });
         });
@@ -520,19 +613,16 @@ function getDb(dbName) {
         return __generator(this, function (_a) {
             return [2 /*return*/, new Promise(function (resolve, reject) {
                     var request = indexedDB.open(dbName);
-                    request.onerror = function (event) {
-                        // reject(event.target.error);
+                    request.onerror = function () {
                         reject(request.error);
                     };
-                    request.onsuccess = function (event) {
-                        // resolve(event.target.result);
+                    request.onsuccess = function () {
                         resolve(request.result);
                     };
                     request.onupgradeneeded = function (event) {
                         if (!event.target) {
                             return;
                         }
-                        // const db = event.target.result;
                         var db = request.result;
                         if (!db.objectStoreNames.contains('tabs')) {
                             db.createObjectStore('tabs', { keyPath: 'id' });

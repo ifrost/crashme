@@ -1,4 +1,4 @@
-# Detecting Browser/Tab crashes POC
+# Detecting Browser/Tab crashes 
 
 This POC shows how browser crashes could potentially be detected.
 

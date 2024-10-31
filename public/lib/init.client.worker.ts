@@ -1,5 +1,6 @@
 import { getDb } from './utils';
-import { BasicReport } from './types';
+import { BaseStateReport } from './types';
+import { createPingEvent, isCloseEvent, isStartEvent, isUpdateEvent } from './events';
 
 type ClientWorkerOptions = {
   pingInterval: number; // e.g. 1000
@@ -16,7 +17,7 @@ type ClientWorkerOptions = {
  *
  */
 export function initClientWorker(options: ClientWorkerOptions) {
-  let lastInfo: BasicReport;
+  let lastStateReport: BaseStateReport;
   let tabLastActive = Date.now();
   let db: IDBDatabase | undefined;
 
@@ -26,33 +27,34 @@ export function initClientWorker(options: ClientWorkerOptions) {
       return;
     }
 
-    if (lastInfo?.id) {
+    if (lastStateReport?.id) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
 
       const workerLastActive = Date.now();
       // save latest received info here - the tab may be paused because of debugging but we need to mark the tab as alive anyway because the worker is still alive
-      store.put({ ...structuredClone(lastInfo), tabLastActive, workerLastActive });
+      store.put({ ...structuredClone(lastStateReport), tabLastActive, workerLastActive });
     }
 
     // ping to tab so it can send latest values
     // saving will happen on the next pingInterval
-    postMessage({ event: 'ping' });
+    const pingEvent = createPingEvent();
+    postMessage(pingEvent);
   }, options.pingInterval);
 
-  addEventListener('message', async (event) => {
-    if (event.data.event === 'update') {
+  addEventListener('message', async (message) => {
+    if (isUpdateEvent(message.data)) {
       tabLastActive = Date.now();
-      lastInfo = structuredClone(event.data.info);
+      lastStateReport = structuredClone(message.data.info);
       // saving cannot happen here because message may not be sent when tab is paused (e.g. while debugging)
     }
-    if (event.data.event === 'start') {
+    if (isStartEvent(message.data)) {
       db = await getDb(options.dbName);
     }
-    if (event.data.event === 'close' && db) {
+    if (isCloseEvent(message.data) && db) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
-      store.delete(event.data.info.id);
+      store.delete(message.data.info.id);
       db = undefined;
     }
   });

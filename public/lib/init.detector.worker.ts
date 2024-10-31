@@ -1,5 +1,11 @@
 import { getDb } from './utils';
-import { BasicReport, DetectorWorkerOptions } from './types';
+import { BaseStateReport, DetectorWorkerOptions } from './types';
+import {
+  createCrashDetectedEvent,
+  createStaleTabDetectedEvent,
+  isCrashReportedEvent,
+  isStaleTabReportedEvent,
+} from './events';
 
 declare const self: SharedWorker;
 
@@ -20,13 +26,13 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
   let openPorts: MessagePort[] = [];
 
   function handleMessageFromReporter(event: MessageEvent) {
-    if (event.data.event === 'crash-reported' && event.data.id) {
+    if (isCrashReportedEvent(event.data)) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
       store.delete(event.data.id);
     }
 
-    if (event.data.event === 'stale-tab-reported' && event.data.tab) {
+    if (isStaleTabReportedEvent(event.data)) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
       store.put({ ...event.data.tab, staleReported: true });
@@ -42,11 +48,11 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
     const request = store.getAll();
 
     request.onsuccess = function () {
-      const tabs = request.result as BasicReport[];
+      const tabs = request.result as BaseStateReport[];
 
-      let activeTabs: BasicReport[] = [];
-      let inactiveTabs: BasicReport[] = [];
-      let staleTabs: BasicReport[] = [];
+      let activeTabs: BaseStateReport[] = [];
+      let inactiveTabs: BaseStateReport[] = [];
+      let staleTabs: BaseStateReport[] = [];
 
       tabs.forEach(function (tab) {
         const workerInactivity = Date.now() - tab.workerLastActive;
@@ -64,19 +70,20 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
         // no active tabs, skip until a tab gets active
         return;
       }
-
       // use only one tab for reporting
-      let reporter = activeTabs.pop();
+      let reporter = activeTabs.pop()!; // must be defined based on the check above
 
       inactiveTabs.forEach(function (tab) {
         openPorts.forEach(function (port) {
-          port.postMessage({ event: 'crash-detected', tab, reporter });
+          const event = createCrashDetectedEvent(tab, reporter);
+          port.postMessage(event);
         });
       });
 
       staleTabs.forEach(function (tab) {
         openPorts.forEach(function (port) {
-          port.postMessage({ event: 'stale-tab-detected', tab, reporter });
+          const event = createStaleTabDetectedEvent(tab, reporter);
+          port.postMessage(event);
         });
       });
     };

@@ -1,11 +1,11 @@
 import { initCrashDetection } from '../lib';
 import { generateRandomName } from './names';
 import { createServerLogger } from './utils';
-import { BasicReport } from '../lib/types';
+import { BaseStateReport } from '../lib/types';
 
 const logger = createServerLogger('tab.main.thread');
 
-interface TabInfo extends BasicReport {
+interface TabInfo extends BaseStateReport {
   url: string;
   memory: Record<string, number>;
 }

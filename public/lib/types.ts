@@ -1,4 +1,4 @@
-export type CrashDetectionOptions<CustomProperties extends BasicReport> = {
+export type CrashDetectionOptions<CustomStateReport extends BaseStateReport> = {
   /**
    * Unique id of a tab
    */
@@ -13,18 +13,18 @@ export type CrashDetectionOptions<CustomProperties extends BasicReport> = {
    * Report a crash (e.g. over HTTP). Needs to return true if reporting was successful.
    * If reporting was not successful the detector will try to report the crash again.
    */
-  reportCrash: (crashedTab: CustomProperties) => Promise<boolean>;
+  reportCrash: (crashedTab: CustomStateReport) => Promise<boolean>;
 
   /**
    * Report a stale tab (e.g. over HTTP). Needs to return true if reporting was successful.
    * If reporting was not successful the detector will try to report the stale tab again.
    */
-  reportStaleTab?: (crashedTab: CustomProperties) => Promise<boolean>;
+  reportStaleTab?: (crashedTab: CustomStateReport) => Promise<boolean>;
 
   /**
    * Modify currentTab param with any parameters about the current tab needed to be reported back
    */
-  updateInfo: (currentTab: CustomProperties) => void;
+  updateInfo: (currentTab: CustomStateReport) => void;
 
   /**
    * Create the shared detector worker (see detector-worker.js)
@@ -74,7 +74,7 @@ export type DetectorWorkerOptions = {
 /**
  * Each report will container BasicReport. You can enrich the data in updateInfo handler
  */
-export type BasicReport = {
+export type BaseStateReport = {
   id: IDBValidKey;
   tabLastActive: number;
   tabFirstActive: number;

@@ -1,44 +1,54 @@
 import { getDb } from './utils';
-import { BasicReport, CrashDetectionOptions } from './types';
+import { BaseStateReport, CrashDetectionOptions } from './types';
+import {
+  createCloseEvent,
+  createCrashReportedEvent,
+  createStaleTabReportedEvent,
+  createStartEvent,
+  createUpdateEvent,
+  isCrashDetectedEvent,
+  isPingEvent,
+  isStaleTabDetectedEvent,
+} from './events';
 
 /**
  * Main function to initialize crash detection. This should be run from the main thread of the tab.
  */
-export function initCrashDetection<CustomProperties extends BasicReport>(
-  options: CrashDetectionOptions<CustomProperties>
+export function initCrashDetection<CustomStateReport extends BaseStateReport>(
+  options: CrashDetectionOptions<CustomStateReport>
 ) {
   let worker: Worker;
   let detector: SharedWorker;
-  let info: Partial<CustomProperties> = {};
+  let stateReport: Partial<CustomStateReport> = {};
   let db: IDBDatabase;
 
   const log = (log: Record<string, string | boolean>) => {
-    log.id = String(info.id);
+    log.id = String(stateReport.id);
     options.log?.(log);
   };
 
-  async function handleDetectorMessage(event: MessageEvent) {
-    if (event.data.event === 'crash-detected' && event.data.reporter.id === info.id) {
-      log({ event: 'crash-detected' });
-      const tab = event.data.tab;
-      const success = await options.reportCrash(tab);
-      log({ event: 'crash-reported', success });
+  async function handleDetectorMessage(message: MessageEvent) {
+    if (isCrashDetectedEvent(message.data) && message.data.reporter.id === stateReport.id) {
+      const tab = message.data.tab;
+      const success = await options.reportCrash(tab as CustomStateReport);
 
       if (success) {
-        log({ event: 'crash-report-confirmed' });
-        detector.port.postMessage({ event: 'crash-reported', id: event.data.tab.id });
+        const crashReportedEvent = createCrashReportedEvent(message.data.tab.id);
+        detector.port.postMessage(crashReportedEvent);
       }
     }
 
-    if (options.reportStaleTab && event.data.event === 'stale-tab-detected' && event.data.reporter.id === info.id) {
-      log({ event: 'stale-tab-detected' });
-      const tab = event.data.tab;
-      const success = await options.reportStaleTab(tab);
-      log({ event: 'stale-tab-reported', success });
+    if (
+      options.reportStaleTab &&
+      isStaleTabDetectedEvent(message.data) &&
+      message.data.reporter.id === stateReport.id
+    ) {
+      const tab = message.data.tab;
+      const success = await options.reportStaleTab(tab as CustomStateReport);
 
       if (success) {
-        log({ event: 'stale-tab-confirmed' });
-        detector.port.postMessage({ event: 'stale-tab-reported', id: event.data.tab.id });
+        const staleTabReportedEvent = createStaleTabReportedEvent(message.data.tab);
+        detector.port.postMessage(staleTabReportedEvent);
       }
     }
   }
@@ -47,26 +57,26 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
    * Generate id for the tab
    */
   function initialize() {
-    info.id = options.id;
-    info.tabFirstActive = Date.now();
+    stateReport.id = options.id;
+    stateReport.tabFirstActive = Date.now();
   }
 
   /**
    * Update latest state of the tab
    */
-  function updateInfo() {
-    // info should have all required info when passed here
-    options.updateInfo(info as CustomProperties);
+  function handleWebWorkerMessage(message: MessageEvent) {
+    if (isPingEvent(message.data)) {
+      // info should have all required info when passed here
+      options.updateInfo(stateReport as CustomStateReport);
 
-    worker.postMessage({
-      event: 'update',
-      info,
-    });
+      const updateEvent = createUpdateEvent(stateReport as BaseStateReport);
+      worker.postMessage(updateEvent);
+    }
   }
 
   function registerWorkers() {
     worker = options.createClientWorker();
-    worker.addEventListener('message', updateInfo);
+    worker.addEventListener('message', handleWebWorkerMessage);
 
     detector = options.createDetectorWorker();
     detector.port.addEventListener('message', handleDetectorMessage);
@@ -74,19 +84,16 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
   }
 
   function unregisterWorkers() {
-    worker.removeEventListener('message', updateInfo);
+    worker.removeEventListener('message', handleWebWorkerMessage);
     detector.port.removeEventListener('message', handleDetectorMessage);
   }
 
   function startWhenReady() {
     // beforeunload is triggered only after at least one interaction
-    log({ event: 'loaded' });
     window.addEventListener('click', start);
   }
 
   async function start() {
-    log({ event: 'started' });
-
     window.removeEventListener('click', start);
     initialize();
 
@@ -98,21 +105,15 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
       // to avoid any delays clean-up happens in the current tab as well
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
-      store.delete(info.id!);
+      store.delete(stateReport.id!);
 
-      worker.postMessage({
-        event: 'close',
-        info,
-      });
+      const closeEvent = createCloseEvent(stateReport as BaseStateReport);
+      worker.postMessage(closeEvent);
       unregisterWorkers();
-      log({ event: 'unloaded-done' });
     });
 
-    worker.postMessage({
-      event: 'start',
-      info,
-    });
-    log({ event: 'started-done' });
+    const startEvent = createStartEvent(stateReport as BaseStateReport);
+    worker.postMessage(startEvent);
   }
 
   // main entry point

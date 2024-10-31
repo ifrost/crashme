@@ -6,8 +6,8 @@ This POC shows how browser crashes could potentially be detected.
 
 1. Run `npm run dev`
 2. Run `npm run server`
-3Open http://localhost:1234
-3. You can open multiple tabs (each tab will get a unique name)
+3. Open http://localhost:1234
+You can open multiple tabs (each tab will get a unique name)
 4. Logs are sent to the terminal via server.js
 5. Try various actions that can simulate a crash
 6. Once a crash is detected it will be sent to the server and stored in local memory

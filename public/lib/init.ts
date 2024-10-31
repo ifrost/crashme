@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import { getDb } from './utils';
 import { BasicReport, CrashDetectionOptions } from './types';
 
@@ -9,17 +7,17 @@ import { BasicReport, CrashDetectionOptions } from './types';
 export function initCrashDetection<CustomProperties extends BasicReport>(
   options: CrashDetectionOptions<CustomProperties>
 ) {
-  let worker;
-  let detector;
+  let worker: Worker;
+  let detector: SharedWorker;
   let info: Partial<CustomProperties> = {};
-  let db;
+  let db: IDBDatabase;
 
   const log = (log: Record<string, string | boolean>) => {
-    log.id = info.id;
+    log.id = String(info.id);
     options.log?.(log);
   };
 
-  async function handleDetectorMessage(event) {
+  async function handleDetectorMessage(event: MessageEvent) {
     if (event.data.event === 'crash-detected' && event.data.reporter.id === info.id) {
       log({ event: 'crash-detected' });
       const tab = event.data.tab;
@@ -57,8 +55,9 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
    * Update latest state of the tab
    */
   function updateInfo() {
-    options.updateInfo(info);
-    //log({ event: 'updated' });
+    // info should have all required info when passed here
+    options.updateInfo(info as CustomProperties);
+
     worker.postMessage({
       event: 'update',
       info,
@@ -99,7 +98,7 @@ export function initCrashDetection<CustomProperties extends BasicReport>(
       // to avoid any delays clean-up happens in the current tab as well
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
-      store.delete(info.id);
+      store.delete(info.id!);
 
       worker.postMessage({
         event: 'close',

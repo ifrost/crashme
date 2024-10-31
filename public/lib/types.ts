@@ -1,4 +1,4 @@
-export type CrashDetectionOptions<CustomProperties> = {
+export type CrashDetectionOptions<CustomProperties extends BasicReport> = {
   /**
    * Unique id of a tab
    */
@@ -75,8 +75,9 @@ export type DetectorWorkerOptions = {
  * Each report will container BasicReport. You can enrich the data in updateInfo handler
  */
 export type BasicReport = {
-  id: string;
+  id: IDBValidKey;
   tabLastActive: number;
   tabFirstActive: number;
   workerLastActive: number;
+  staleReported: boolean;
 };

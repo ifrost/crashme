@@ -1,15 +1,14 @@
-// @ts-nocheck
 import { initCrashDetection } from '../lib';
 import { generateRandomName } from './names';
 import { createServerLogger } from './utils';
+import { BasicReport } from '../lib/types';
 
 const logger = createServerLogger('tab.main.thread');
 
-type TabInfo = {
-  id: string;
+interface TabInfo extends BasicReport {
   url: string;
   memory: Record<string, number>;
-};
+}
 
 export function startReportingCrashes() {
   initCrashDetection<TabInfo>({

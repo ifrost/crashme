@@ -7,7 +7,7 @@ function serverLog(log: Record<string, string | number | boolean>) {
 
 export function createServerLogger(source: string) {
   return {
-    log: (log: Record<string, string | number | boolean>) => {
+    log: (log: Record<string, string | number | boolean | IDBValidKey>) => {
       serverLog({
         ...log,
         source,

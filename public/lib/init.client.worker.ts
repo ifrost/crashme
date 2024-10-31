@@ -1,6 +1,5 @@
-// @ts-nocheck
-
 import { getDb } from './utils';
+import { BasicReport } from './types';
 
 type ClientWorkerOptions = {
   pingInterval: number; // e.g. 1000
@@ -17,9 +16,9 @@ type ClientWorkerOptions = {
  *
  */
 export function initClientWorker(options: ClientWorkerOptions) {
-  let lastInfo;
+  let lastInfo: BasicReport;
   let tabLastActive = Date.now();
-  let db;
+  let db: IDBDatabase | undefined;
 
   setInterval(() => {
     if (!db) {
@@ -50,7 +49,7 @@ export function initClientWorker(options: ClientWorkerOptions) {
     if (event.data.event === 'start') {
       db = await getDb(options.dbName);
     }
-    if (event.data.event === 'close') {
+    if (event.data.event === 'close' && db) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
       store.delete(event.data.info.id);

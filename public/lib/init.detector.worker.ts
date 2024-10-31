@@ -1,7 +1,7 @@
-// @ts-nocheck
-
 import { getDb } from './utils';
-import { DetectorWorkerOptions } from './types';
+import { BasicReport, DetectorWorkerOptions } from './types';
+
+declare const self: SharedWorker;
 
 /**
  * Main logic of the Shared Worker responsible for detecting crashes. Create a separate file for the worker with code:
@@ -15,11 +15,11 @@ import { DetectorWorkerOptions } from './types';
  *
  */
 export function initDetectorWorker(options: DetectorWorkerOptions) {
-  let db;
+  let db: IDBDatabase;
   let started = false;
-  let openPorts = [];
+  let openPorts: MessagePort[] = [];
 
-  function handleMessageFromReporter(event) {
+  function handleMessageFromReporter(event: MessageEvent) {
     if (event.data.event === 'crash-reported' && event.data.id) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
@@ -29,7 +29,7 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
     if (event.data.event === 'stale-tab-reported' && event.data.tab) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
-      store.store({ ...event.data.tab, staleReported: true });
+      store.put({ ...event.data.tab, staleReported: true });
     }
   }
 
@@ -42,11 +42,11 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
     const request = store.getAll();
 
     request.onsuccess = function () {
-      const tabs = request.result;
+      const tabs = request.result as BasicReport[];
 
-      let activeTabs = [];
-      let inactiveTabs = [];
-      let staleTabs = [];
+      let activeTabs: BasicReport[] = [];
+      let inactiveTabs: BasicReport[] = [];
+      let staleTabs: BasicReport[] = [];
 
       tabs.forEach(function (tab) {
         const workerInactivity = Date.now() - tab.workerLastActive;
@@ -82,12 +82,12 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
     };
   }
 
-  self.onconnect = async function (event) {
+  self.addEventListener('connect', async function (event) {
     if (!started) {
       db = await getDb(options.dbName);
 
       // keep track of all clients to report only to one tab
-      const port = event.ports[0];
+      const port = (event as MessageEvent).ports[0];
       openPorts.push(port);
       port.addEventListener('message', handleMessageFromReporter);
       port.addEventListener('close', () => {
@@ -98,5 +98,5 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
       setInterval(checkStaleTabs, options.interval);
       started = true;
     }
-  };
+  });
 }

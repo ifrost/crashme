@@ -1,20 +1,17 @@
 export async function getDb(dbName: string) {
-  return new Promise(function (resolve, reject) {
+  return new Promise<IDBDatabase>(function (resolve, reject) {
     let request = indexedDB.open(dbName);
     request.onerror = (event) => {
-      // reject(event.target.error);
       reject(request.error);
     };
     request.onsuccess = (event) => {
-      // resolve(event.target.result);
-      resolve(request.result);
+      resolve(request.result as IDBDatabase);
     };
     request.onupgradeneeded = (event) => {
       if (!event.target) {
         return;
       }
 
-      // const db = event.target.result;
       const db = request.result;
 
       if (!db.objectStoreNames.contains('tabs')) {

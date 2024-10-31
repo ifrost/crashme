@@ -1,6 +1,6 @@
 // @ts-nocheck
 
-import {getDb} from "./utils";
+import { getDb } from './utils';
 
 type ClientWorkerOptions = {
   pingInterval: number; // e.g. 1000
@@ -48,5 +48,4 @@ export function initClientWorker(options: ClientWorkerOptions) {
       db = undefined;
     }
   });
-
 }

@@ -1,6 +1,8 @@
-import {initDetectorWorker} from "../lib";
+import { initDetectorWorker } from '../lib';
 
 initDetectorWorker({
-    dbName: 'crashme.crashes',
-    inactivityThreshold: 5000,
+  dbName: 'crashme.crashes',
+  staleThreshold: 60000,
+  crashThreshold: 5000,
+  interval: 5000,
 });

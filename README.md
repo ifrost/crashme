@@ -10,7 +10,7 @@ This POC shows how browser crashes could potentially be detected.
 4. Logs are sent to the terminal via server.js
 5. Try various actions that can simulate a crash
 6. Once a crash is detected it will be sent to the server and stored in local memory
-7. http://localhost:1234 will show crashes that were reported 
+7. http://localhost:1234 will show crashes that were reported
 
 ## Resources
 
@@ -23,18 +23,20 @@ This POC shows how browser crashes could potentially be detected.
 1. Detecting crashes before they occur
 2. Track and persist state of tabs (last alive ping + if it was closed properly). Send crash reports based on the state.
 
-### Detecting crashes before they occur 
+### Detecting crashes before they occur
 
 The idea was to check if the page becomes unresponsive or is very close to hitting memory limits and report it over HTTP to persisted storage.
 
 The tab may be near crash when:
 
 1. Memory usage can be checked with `window.performance.memory`
-  - Pros:
-    - It provides total JS heap size, used heap size and the limit
-  - Cons:
-    - Browser may dynamically change limits and allocate additional memory
-    - Available only in Chrome
+
+- Pros:
+  - It provides total JS heap size, used heap size and the limit
+- Cons:
+  - Browser may dynamically change limits and allocate additional memory
+  - Available only in Chrome
+
 2. When browser slows down. This could be checked by a ping mechanism using web/service workers.
    - Pros:
      - Available in all browsers
@@ -62,10 +64,10 @@ In the POC following approaches were considered:
      - pros: easy to use
      - cons: can lead to incorrect state when multiple tabs access it at the same time (https://html.spec.whatwg.org/multipage/webstorage.html#introduction-15): "(...) authors are encouraged to assume that there is no locking mechanism (...)"
    - Browser session storage
-     - cons: used by Sentry (see resources) but it's isolated to a single tab so to make it work it would require user to refresh the tab (not close it) after the crash which may not happen every time (https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage) 
+     - cons: used by Sentry (see resources) but it's isolated to a single tab so to make it work it would require user to refresh the tab (not close it) after the crash which may not happen every time (https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage)
    - Browser indexed db
-     - pros: can be shared between workers and allows transactional updates 
-   - External storage (over HTTP): 
+     - pros: can be shared between workers and allows transactional updates
+   - External storage (over HTTP):
      - cons: will stop reporting when the user if offline though the tab may not crashed
 
 Choice: IndexedDB
@@ -81,9 +83,9 @@ Choice: setInterval inside a service/web worker
 3. Client code to save state to storage
 
 - save inside the tab thread
-    - cons: debugging the page will stop the thread and detector could say it crashed
+  - cons: debugging the page will stop the thread and detector could say it crashed
 - save inside service/web worker
-    - pros: worker will keep working even if the tab is paused;
+  - pros: worker will keep working even if the tab is paused;
 
 Choice: Save inside a web worker
 
@@ -95,7 +97,7 @@ A caveat is that Firefox doesn't kill the web worker immediately when tab crashe
 
 Choice: Use shared web worker. In theory it should work with a service worker as well though based on experiments service worker may be killed when tab crashes, while shared web workers seems to keep running.
 
-### 
+###
 
 ```mermaid
 sequenceDiagram
@@ -119,8 +121,8 @@ sequenceDiagram
 2. WebWorker starts the loop with setInterval. This is done in the worker to avoid slowing down setInterval on inactive tabs
 3. WebWorker pings the client for the data (WebWorker have no access to url, memory usage, etc.)
 4. WebWorker save the data with tabLastActive timestamps to the IndexedDB when receives a message from the tab. Saving is done in the worker to ensure it's a separate thread in cases the Client thread is paused because of debugging.
-4. WebWorker saves workerLastActive timestamp every second
-5. When Client is unloaded properly it sends the message to the WebWorker to remove the entry from IndexedDb
+5. WebWorker saves workerLastActive timestamp every second
+6. When Client is unloaded properly it sends the message to the WebWorker to remove the entry from IndexedDb
 
 A separate process check for stale tabs and reports back to the backend. It connects to the same IndexedDB
 

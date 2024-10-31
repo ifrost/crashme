@@ -1,6 +1,6 @@
-import {initClientWorker} from "../lib";
+import { initClientWorker } from '../lib';
 
 initClientWorker({
-    dbName: 'crashme.crashes',
-    pingInterval: 1000,
+  dbName: 'crashme.crashes',
+  pingInterval: 1000,
 });

@@ -1,4 +1,4 @@
-function serverLog(log: Record<string, string | number | boolean>) {
+function serverLog(log: Record<string, string | number | boolean> | IDBValidKey) {
   const logs = Object.entries(log)
     .map(([key, value]) => `${key}=${value}`)
     .join('&');

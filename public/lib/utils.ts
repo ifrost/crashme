@@ -1,10 +1,10 @@
 export async function getDb(dbName: string) {
   return new Promise<IDBDatabase>(function (resolve, reject) {
     let request = indexedDB.open(dbName);
-    request.onerror = (event) => {
+    request.onerror = () => {
       reject(request.error);
     };
-    request.onsuccess = (event) => {
+    request.onsuccess = () => {
       resolve(request.result as IDBDatabase);
     };
     request.onupgradeneeded = (event) => {

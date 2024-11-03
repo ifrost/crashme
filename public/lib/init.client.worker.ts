@@ -45,7 +45,7 @@ export function initClientWorker(options: ClientWorkerOptions) {
   addEventListener('message', async (message) => {
     if (isUpdateEvent(message.data)) {
       tabLastActive = Date.now();
-      lastStateReport = structuredClone(message.data.info);
+      lastStateReport = structuredClone(message.data.report);
       // saving cannot happen here because message may not be sent when tab is paused (e.g. while debugging)
     }
     if (isStartEvent(message.data)) {
@@ -54,7 +54,7 @@ export function initClientWorker(options: ClientWorkerOptions) {
     if (isCloseEvent(message.data) && db) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
-      store.delete(message.data.info.id);
+      store.delete(message.data.id);
       db = undefined;
     }
   });

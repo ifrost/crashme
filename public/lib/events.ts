@@ -5,17 +5,17 @@ import { BaseStateReport } from './types';
  */
 export type StartEvent = {
   event: 'start';
-  info: BaseStateReport;
+  report: BaseStateReport;
 };
 
 export function isStartEvent(event: any): event is StartEvent {
   return event?.event === 'start';
 }
 
-export function createStartEvent(info: BaseStateReport): StartEvent {
+export function createStartEvent(report: BaseStateReport): StartEvent {
   return {
     event: 'start',
-    info,
+    report,
   };
 }
 
@@ -39,15 +39,15 @@ export function isPingEvent(event: any): event is PingEvent {
  */
 export type UpdateEvent = {
   event: 'update';
-  info: BaseStateReport;
+  report: BaseStateReport;
 };
 
 export function isUpdateEvent(event: any): event is UpdateEvent {
   return event?.event === 'update';
 }
 
-export function createUpdateEvent(info: BaseStateReport): UpdateEvent {
-  return { event: 'update', info };
+export function createUpdateEvent(report: BaseStateReport): UpdateEvent {
+  return { event: 'update', report };
 }
 
 /**
@@ -55,17 +55,17 @@ export function createUpdateEvent(info: BaseStateReport): UpdateEvent {
  */
 export type CloseEvent = {
   event: 'close';
-  info: BaseStateReport;
+  id: IDBValidKey;
 };
 
 export function isCloseEvent(event: any): event is CloseEvent {
   return event?.event === 'close';
 }
 
-export function createCloseEvent(info: BaseStateReport): CloseEvent {
+export function createCloseEvent(id: IDBValidKey): CloseEvent {
   return {
     event: 'close',
-    info,
+    id,
   };
 }
 
@@ -74,19 +74,19 @@ export function createCloseEvent(info: BaseStateReport): CloseEvent {
  */
 export type CrashDetectedEvent = {
   event: 'crash-detected';
-  tab: BaseStateReport;
-  reporter: BaseStateReport;
+  report: BaseStateReport;
+  senderId: IDBValidKey;
 };
 
 export function isCrashDetectedEvent(event: any): event is CrashDetectedEvent {
   return event?.event === 'crash-detected';
 }
 
-export function createCrashDetectedEvent(tab: BaseStateReport, reporter: BaseStateReport): CrashDetectedEvent {
+export function createCrashDetectedEvent(report: BaseStateReport, senderId: IDBValidKey): CrashDetectedEvent {
   return {
     event: 'crash-detected',
-    tab,
-    reporter,
+    report,
+    senderId,
   };
 }
 
@@ -95,19 +95,19 @@ export function createCrashDetectedEvent(tab: BaseStateReport, reporter: BaseSta
  */
 export type StaleTabDetectedEvent = {
   event: 'stale-tab-detected';
-  tab: BaseStateReport;
-  reporter: BaseStateReport;
+  report: BaseStateReport;
+  senderId: IDBValidKey;
 };
 
 export function isStaleTabDetectedEvent(event: any): event is StaleTabDetectedEvent {
   return event?.event === 'stale-tab-detected';
 }
 
-export function createStaleTabDetectedEvent(tab: BaseStateReport, reporter: BaseStateReport): StaleTabDetectedEvent {
+export function createStaleTabDetectedEvent(report: BaseStateReport, senderId: IDBValidKey): StaleTabDetectedEvent {
   return {
     event: 'stale-tab-detected',
-    tab,
-    reporter,
+    report,
+    senderId,
   };
 }
 
@@ -133,16 +133,16 @@ export function createCrashReportedEvent(id: IDBValidKey): CrashReportedEvent {
 
 export type StaleTabReportedEvent = {
   event: 'stale-tab-reported';
-  tab: BaseStateReport;
+  report: BaseStateReport;
 };
 
 export function isStaleTabReportedEvent(event: any): event is StaleTabReportedEvent {
   return event?.event === 'stale-tab-reported';
 }
 
-export function createStaleTabReportedEvent(tab: BaseStateReport): StaleTabReportedEvent {
+export function createStaleTabReportedEvent(report: BaseStateReport): StaleTabReportedEvent {
   return {
     event: 'stale-tab-reported',
-    tab,
+    report,
   };
 }

@@ -28,26 +28,22 @@ export function initCrashDetection<CustomStateReport extends BaseStateReport>(
   };
 
   async function handleDetectorMessage(message: MessageEvent) {
-    if (isCrashDetectedEvent(message.data) && message.data.reporter.id === stateReport.id) {
-      const tab = message.data.tab;
+    if (isCrashDetectedEvent(message.data) && message.data.senderId === stateReport.id) {
+      const tab = message.data.report;
       const success = await options.reportCrash(tab as CustomStateReport);
 
       if (success) {
-        const crashReportedEvent = createCrashReportedEvent(message.data.tab.id);
+        const crashReportedEvent = createCrashReportedEvent(message.data.report.id);
         detector.port.postMessage(crashReportedEvent);
       }
     }
 
-    if (
-      options.reportStaleTab &&
-      isStaleTabDetectedEvent(message.data) &&
-      message.data.reporter.id === stateReport.id
-    ) {
-      const tab = message.data.tab;
-      const success = await options.reportStaleTab(tab as CustomStateReport);
+    if (options.reportStaleTab && isStaleTabDetectedEvent(message.data) && message.data.senderId === stateReport.id) {
+      const report = message.data.report;
+      const success = await options.reportStaleTab(report as CustomStateReport);
 
       if (success) {
-        const staleTabReportedEvent = createStaleTabReportedEvent(message.data.tab);
+        const staleTabReportedEvent = createStaleTabReportedEvent(message.data.report);
         detector.port.postMessage(staleTabReportedEvent);
       }
     }
@@ -105,7 +101,7 @@ export function initCrashDetection<CustomStateReport extends BaseStateReport>(
       const store = transaction.objectStore('tabs');
       store.delete(stateReport.id!);
 
-      const closeEvent = createCloseEvent(stateReport as BaseStateReport);
+      const closeEvent = createCloseEvent(stateReport.id!);
       worker.postMessage(closeEvent);
       unregisterWorkers();
     });

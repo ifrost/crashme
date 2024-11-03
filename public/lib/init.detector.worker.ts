@@ -35,7 +35,7 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
     if (isStaleTabReportedEvent(event.data)) {
       const transaction = db.transaction(['tabs'], 'readwrite');
       const store = transaction.objectStore('tabs');
-      store.put({ ...event.data.tab, staleReported: true });
+      store.put({ ...event.data.report, staleReported: true });
     }
   }
 
@@ -73,16 +73,16 @@ export function initDetectorWorker(options: DetectorWorkerOptions) {
       // use only one tab for reporting
       let reporter = activeTabs.pop()!; // must be defined based on the check above
 
-      inactiveTabs.forEach(function (tab) {
+      inactiveTabs.forEach(function (report) {
         openPorts.forEach(function (port) {
-          const event = createCrashDetectedEvent(tab, reporter);
+          const event = createCrashDetectedEvent(report, reporter.id);
           port.postMessage(event);
         });
       });
 
-      staleTabs.forEach(function (tab) {
+      staleTabs.forEach(function (report) {
         openPorts.forEach(function (port) {
-          const event = createStaleTabDetectedEvent(tab, reporter);
+          const event = createStaleTabDetectedEvent(report, reporter.id);
           port.postMessage(event);
         });
       });

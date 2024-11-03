@@ -4,10 +4,10 @@ import { BaseStateReport } from './types';
  */
 export type StartEvent = {
     event: 'start';
-    info: BaseStateReport;
+    report: BaseStateReport;
 };
 export declare function isStartEvent(event: any): event is StartEvent;
-export declare function createStartEvent(info: BaseStateReport): StartEvent;
+export declare function createStartEvent(report: BaseStateReport): StartEvent;
 /**
  * Sent from WebWorker to the main thread to force an update
  */
@@ -21,39 +21,39 @@ export declare function isPingEvent(event: any): event is PingEvent;
  */
 export type UpdateEvent = {
     event: 'update';
-    info: BaseStateReport;
+    report: BaseStateReport;
 };
 export declare function isUpdateEvent(event: any): event is UpdateEvent;
-export declare function createUpdateEvent(info: BaseStateReport): UpdateEvent;
+export declare function createUpdateEvent(report: BaseStateReport): UpdateEvent;
 /**
  * Send from main thread to WebWorker when browser tab is closed correctly
  */
 export type CloseEvent = {
     event: 'close';
-    info: BaseStateReport;
+    id: IDBValidKey;
 };
 export declare function isCloseEvent(event: any): event is CloseEvent;
-export declare function createCloseEvent(info: BaseStateReport): CloseEvent;
+export declare function createCloseEvent(id: IDBValidKey): CloseEvent;
 /**
  * Sent from detector SharedWorker to main thread to indicate a crash was detected
  */
 export type CrashDetectedEvent = {
     event: 'crash-detected';
-    tab: BaseStateReport;
-    reporter: BaseStateReport;
+    report: BaseStateReport;
+    senderId: IDBValidKey;
 };
 export declare function isCrashDetectedEvent(event: any): event is CrashDetectedEvent;
-export declare function createCrashDetectedEvent(tab: BaseStateReport, reporter: BaseStateReport): CrashDetectedEvent;
+export declare function createCrashDetectedEvent(report: BaseStateReport, senderId: IDBValidKey): CrashDetectedEvent;
 /**
  * Sent from detector SharedWorker to main thread to indicate a stale tab was detected
  */
 export type StaleTabDetectedEvent = {
     event: 'stale-tab-detected';
-    tab: BaseStateReport;
-    reporter: BaseStateReport;
+    report: BaseStateReport;
+    senderId: IDBValidKey;
 };
 export declare function isStaleTabDetectedEvent(event: any): event is StaleTabDetectedEvent;
-export declare function createStaleTabDetectedEvent(tab: BaseStateReport, reporter: BaseStateReport): StaleTabDetectedEvent;
+export declare function createStaleTabDetectedEvent(report: BaseStateReport, senderId: IDBValidKey): StaleTabDetectedEvent;
 /**
  * Sent from the main thread to detector SharedWorker to indicate the crash was successfully reported
  */
@@ -65,7 +65,7 @@ export declare function isCrashReportedEvent(event: any): event is CrashReported
 export declare function createCrashReportedEvent(id: IDBValidKey): CrashReportedEvent;
 export type StaleTabReportedEvent = {
     event: 'stale-tab-reported';
-    tab: BaseStateReport;
+    report: BaseStateReport;
 };
 export declare function isStaleTabReportedEvent(event: any): event is StaleTabReportedEvent;
-export declare function createStaleTabReportedEvent(tab: BaseStateReport): StaleTabReportedEvent;
+export declare function createStaleTabReportedEvent(report: BaseStateReport): StaleTabReportedEvent;

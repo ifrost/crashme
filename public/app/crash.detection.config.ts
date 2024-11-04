@@ -39,6 +39,18 @@ export function startReportingCrashes() {
       return true;
     },
 
+    reportStaleTab: async (tab) => {
+      logger.log({ event: 'reporting stale tab', tab: tab.id });
+      await fetch('/stale-tab', {
+        method: 'POST',
+        body: JSON.stringify(tab),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      return true;
+    },
+
     log: (log: Record<string, string | boolean | number>) => {
       console.log(log);
       logger.log(log);

@@ -63,7 +63,7 @@ export type DetectorWorkerOptions = {
    * It doesn't mean the tab crashed but indicates the main thread was blocked for given time. This may be due to
    * extensive processing or because the thread was paused with a debugger.
    */
-  staleThreshold: number;
+  staleThreshold?: number;
 
   /**
    * How often detection logic will be triggered

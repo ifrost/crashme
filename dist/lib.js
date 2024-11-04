@@ -338,7 +338,7 @@ function initDetectorWorker(options) {
                 if (workerInactivity > options.crashThreshold) {
                     inactiveTabs.push(tab);
                 }
-                else if (tabInactivity > options.staleThreshold && !tab.staleReported) {
+                else if (options.staleThreshold && tabInactivity > options.staleThreshold && !tab.staleReported) {
                     staleTabs.push(tab);
                 }
                 else {

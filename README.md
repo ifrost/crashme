@@ -2,7 +2,7 @@
 
 This POC shows how browser crashes could potentially be detected.
 
-## How to run demo?
+## How to run the demo?
 
 1. Run `npm run dev`
 2. Run `npm run server`
@@ -21,19 +21,19 @@ You can open multiple tabs (each tab will get a unique name)
 
 ## How does it work?
 
-There are two basic concept:
+There are two basic concepts:
 
 1. Tab tracking
 
 Each browser tab reports its current state on regular intervals. The current state is saved in IndexedDB as a state report. 
-The state contains properties like: last time when it was active, url, memory usage, etc.
-The state is removed from the db when then tab is closed by the user
+The state report contains properties like: last time when it was active, url, memory usage, etc.
+The state report is removed from the database when then the tab is closed by the user.
 
 2. Crash detection
 
-A separate process reads all state reports. If it happens that there's a state report that was saved and not removed for long period of time it means the tab was not closed correctly and it probably crashed. 
+A separate process reads all currently stored state reports. If it happens that there's a stale state report that is still in the database but updated for long period of time it means the tab was not closed correctly or stopped responding and it probably crashed. 
 
-## How to use it in my project?
+## How to use it in a project?
 
 You need to create 2 files for workers and run init function in your app:
 
@@ -44,7 +44,6 @@ import { initDetectorWorker } from 'crashme';
 
 initDetectorWorker({
   dbName: 'crashme.crashes',
-  staleThreshold: 60000,
   crashThreshold: 5000,
   interval: 5000,
 });
@@ -95,4 +94,5 @@ export function startReportingCrashes() {
 
 ```
 
+More info why 2 separate workers are needed is described [here](./public/lib/README.md).
 

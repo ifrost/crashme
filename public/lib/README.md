@@ -1,10 +1,16 @@
-# Client (main thread)
+# Overview
 
-Client code (main thread of the tab). Responsibilities:
+Client: code that is run in the main thread of the tab (collects info about the tab)
+Client worker: a web worker running for the same tab but in a separate thread to track main thread status
+Detector worker: a shared worker, single instance for all tabs used to check which tabs crashed
+
+# Client
+
+Client code (runs in the  main thread of the tab). Responsibilities:
 - Workers initialization
-- Sending updates about the tab to web worker (see below)
-- Sending close event to web worker when the tab is closed by the user
-- Handling crash reports
+- Sending updates about the tab to the web worker (see below)
+- Sending close event to the web worker when the tab is closed by the user
+- Handling crash reports sent by the shared detector worker
 
 ## Workers initialization
 
@@ -18,7 +24,7 @@ sequenceDiagram
     Client->>DetectorWorker: addEventListener("message")
 ```
 
-(1) Crash detection is activated on click because it relies on `beforeunload` event which is not dispatched when user does not interact with tha page (ie. [sticky activation](https://developer.mozilla.org/en-US/docs/Glossary/Sticky_activation)).
+(1) Crash detection is activated on click because proper clean-up relies on `beforeunload` event which is not dispatched when user does not interact with tha page (ie. [sticky activation](https://developer.mozilla.org/en-US/docs/Glossary/Sticky_activation)).
 
 ## Sending updates about the tab
 
@@ -29,15 +35,11 @@ sequenceDiagram
     ClientWorker->>ClientWorker: setInterval(options.pingInterval)
     ClientWorker->>Client: postMessage({ event: "ping" });
     Client->>ClientWorker: postMessage({ event: "update", report: ... });
-    Browser->>Client: beforeunload
-    Client->>ClientWorker: postMessage({ event: "close" });
 ```
 
-(2) (3) Worker sends pings on regular interval. Worker is responsible for sending pings because client code may not be able to run code on regular basis:
+(2) (3) The worker sends pings on regular ping interval. The worker is responsible for sending pings because client code may not be able to run code on regular basis:
 - setInterval may be deprioritized when tab is inactive
 - setInterval may not be triggered when code is paused due to debugging
-
-Putting "pinging" logic in the web worker helps mitigate above issues.
 
 (4) Client code sends report about current tab (like URL, memory usage) to the worker for saving
 
@@ -69,23 +71,22 @@ sequenceDiagram
       ClientWorker->ClientWorker: workerLastActive = Date.now();
       ClientWorker->>IndexedDB: put(workerLastActive, tabLastActive, report)
       ClientWorker->>Client: postMessage({ event: "ping" });
+      activate Client
     end
     Client-->>ClientWorker: postMessage({ event: "update", report });
+    deactivate Client
     ClientWorker->>ClientWorker: tabLastActive = Date.now()
 ```
 
 (2) `workerLastActive` is updated on regular interval calls and stored along with current data to the db (3)
 
-(4) Ping is sent at the end of the loop, but since it's asynchronous communication the update may happen outside of the loop:
+(4) Ping is sent at the end of the loop, but since it's asynchronous the update may happen outside of the loop:
 
-(5) Tab send the update
+(5) The client sends the update as a response to ping event 
 
-(6) `tabLastActive` is updated, and will be stored on the next update loop
-
-Note: Saving could also happen here but it'd be duplicated since it has to happen in the main UpdateLoop anyway. This is because UpdateLoop will always happen while "ping" update from the tab may not happen when the tab is being debugged.
+(6) `tabLastActive` is updated, and will be stored on the next main update loop
 
 ## Removing state of the tab
-
 
 ```mermaid
 sequenceDiagram
@@ -102,11 +103,11 @@ Detector Worker (Shared Worker) is responsible for:
 
 Detector's logic:
 
-The tab is active when `workerLastActive` is very close to Date.now(). `tabLastActive` is not reliable to determine it as the tab may be debugged and `tabLastActive` freezes for time being.
+The tab is active when `workerLastActive` (last time worker code was run) is very close to Date.now(). `tabLastActive` is not reliable to determine if the tab is active as the tab may be debugged and `tabLastActive` freezes for time being.
 
-If the tab was closed successfully the report simply won't be in the database.
+If the tab is closed successfully the report won't be in the database. The database should only contain currently active tabs or tabs that were not closed correctly (due to a crash) and have been inactive for some time.
 
-The tab is detected as crashed when `workerLastActive` is old when compared to Date.now(). It means the web worker stopped working but since the report is in the database in means the page was not closed correctly so it probably crashed.
+The tab is detected as crashed when `workerLastActive` is above certain threshold (set but the user) when compared to Date.now(). When threshold is reached it means the web worker stopped working but since the report is in the database in means the page was not closed correctly and the worker stopped responding so it probably crashed.
 
 ```mermaid
 sequenceDiagram
